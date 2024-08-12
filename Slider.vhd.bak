@@ -1,0 +1,36 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use std.textio.all;
+
+entity Slider is
+    port (
+        clk : in std_logic;  -- Ρολόι σήματος
+        rst : in std_logic;  -- Σήμα επαναφοράς (επαναφορά σε αρχική κατάσταση)
+        data_in : out std_logic_vector(15 downto 0)  -- Τιμή σήματος εισόδου
+    );
+end entity Slider;
+
+architecture Behavioral of Slider is
+    constant FILENAME : string := "datain.dat";  -- Όνομα αρχείου εισόδου
+    file data_file : text open read_mode is FILENAME;
+    variable input_line : line;
+    variable input_value : integer;
+begin
+    process (clk, rst)
+    begin
+        if rst = '1' then
+            -- Επαναφορά σε αρχική κατάσταση, μηδενισμός των μεταβλητών
+            data_in <= (others => '0');
+            if not endfile(data_file) then
+                file_close(data_file);
+            end if;
+        elsif rising_edge(clk) then
+            if not endfile(data_file) then
+                readline(data_file, input_line);
+                read(input_line, input_value);
+                data_in <= std_logic_vector(to_unsigned(input_value, data_in'length));
+            end if;
+        end if;
+    end process;
+end architecture Behavioral;

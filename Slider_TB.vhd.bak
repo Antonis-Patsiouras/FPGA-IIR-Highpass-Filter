@@ -1,0 +1,61 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use std.textio.all;
+
+entity Slider_TB is
+end entity Slider_TB;
+
+architecture Behavioral of Slider_TB is
+    constant CLOCK_PERIOD : time := 10 ns;  -- Περίοδος ρολογιού (παράδειγμα: 100 MHz)
+    
+    signal clk : std_logic := '0';  -- Σήμα ρολογιού
+    signal rst : std_logic := '0';  -- Σήμα επαναφοράς
+    signal data_in : std_logic_vector(15 downto 0);  -- Τιμή σήματος εισόδου
+
+    file data_file : text open read_mode is "datain.dat";  -- Αρχείο εισόδου
+    variable input_line : line;
+    variable input_value : integer;
+begin
+    -- Διαδικασία για την παραγωγή του σήματος ρολογιού
+    clk_process: process
+    begin
+        while now < 1000 ns loop  -- Προσομοίωση για 10000 ns (περίπου 10 κύκλους ρολογιού)
+            clk <= '0';
+            wait for CLOCK_PERIOD / 2;
+            clk <= '1';
+            wait for CLOCK_PERIOD / 2;
+        end loop;
+        wait;
+    end process;
+
+    -- Διαδικασία για την παραγωγή της επαναφοράς
+    reset_process: process
+    begin
+        rst <= '1';
+        wait for 50 ns;
+        rst <= '0';
+        wait;
+    end process;
+
+    -- Διαδικασία για την προσομοίωση του ολισθητή γραμμής
+    slider_process: process (clk)
+    begin
+        if rising_edge(clk) then
+            if not endfile(data_file) then
+                readline(data_file, input_line);
+                read(input_line, input_value);
+                data_in <= std_logic_vector(to_unsigned(input_value, data_in'length));
+            end if;
+        end if;
+    end process;
+
+    -- Σταματάμε την προσομοίωση μετά από ένα χρονικό διάστημα
+    end_simulation: process
+    begin
+        wait for 1000 ns;  -- Προσομοίωση για 1000 ns (παράδειγμα)
+        report "Simulation finished" severity note;
+        wait;
+    end process;
+
+end architecture Behavioral;

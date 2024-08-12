@@ -1,0 +1,67 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity iir_filter_tb is
+end entity iir_filter_tb;
+
+architecture tb_arch of iir_filter_tb is
+
+    constant CLK_PERIOD : time := 10 ns;  -- Clock period (adjust as necessary)
+    constant WORD_WIDTH : integer := 8;
+    
+    signal clk         : std_logic := '0';
+    signal reset_n     : std_logic := '0';
+    signal x           : std_logic_vector(WORD_WIDTH - 1 downto 0);
+    signal y           : std_logic_vector(WORD_WIDTH - 1 downto 0);
+
+begin
+
+    -- Instantiate the IIR filter
+    dut: entity work.iir_filter
+        generic map (
+            WORD_WIDTH => WORD_WIDTH
+        )
+        port map (
+            x       => x,
+            y       => y,
+            reset_n => reset_n,
+            clk     => clk
+        );
+
+    -- Clock process
+    clk_process: process
+    begin
+        while now < 1000 ns loop  -- Simulate for 1000 ns
+            clk <= '0';
+            wait for CLK_PERIOD / 2;
+            clk <= '1';
+            wait for CLK_PERIOD / 2;
+        end loop;
+        wait;
+    end process;
+
+    -- Stimulus process
+    stimulus: process
+    begin
+        reset_n <= '0';
+        wait for 100 ns;
+        reset_n <= '1';
+        wait for 10 ns;
+
+        -- Apply input data (you can modify this for your specific test)
+        x <= "00000001";  -- Example input data
+
+        wait for 100 ns;
+        x <= "00000010";  -- Next example input data
+        wait for 100 ns;
+
+        -- Add more test cases as needed
+
+        wait for 700 ns;
+
+        -- End the simulation
+        wait;
+    end process;
+
+end architecture tb_arch;
